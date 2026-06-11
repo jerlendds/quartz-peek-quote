@@ -2,20 +2,38 @@
 
 Practical examples for using `quartz-peek-quotes` in a Quartz v5 site.
 
-## 1. Add the Component to a Layout
+## 1. Enable the Plugin
 
-Install the plugin, then place `PeekQuotes` in a Quartz layout slot.
+Install the plugin, then enable it in `quartz.config.yaml`.
 
 ```yaml
 plugins:
   - source: github:darkmindsxyz/quartz-peek-quotes
     enabled: true
-    layout:
-      position: right
-      priority: 50
 ```
 
-The component can also be instantiated directly from a TypeScript layout override:
+## 2. Inline Markdown Quote
+
+Place a fenced `peek` block wherever the quote should appear in the Markdown document.
+
+````md
+```peek
+peekQuote:
+  text: |
+    The witness began with the weather.
+
+    The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.
+
+    Only later did the surrounding details make the statement feel complete.
+  highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
+```
+````
+
+The transformer replaces that code fence with the draggable quote card inline.
+
+## 3. Programmatic Component
+
+The component can still be instantiated directly from a TypeScript layout override:
 
 ```ts
 import Plugin from "./.quartz/plugins";
@@ -24,8 +42,6 @@ export const layout = {
   right: [Plugin.PeekQuotes()],
 };
 ```
-
-## 2. Static Quote Text
 
 Pass the full document text and the exact highlighted fragment to the component.
 
@@ -47,38 +63,9 @@ Only later did the surrounding details make the statement feel complete.`,
 };
 ```
 
-## 3. Frontmatter-Driven Quote
-
-If no `text` or `highlight` option is passed, the component reads the current page frontmatter.
-
-```yaml
----
-title: Interview Notes
-peekQuote:
-  text: |
-    The witness began with the weather.
-
-    The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.
-
-    Only later did the surrounding details make the statement feel complete.
-  highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
----
-```
-
-Short aliases are supported too:
-
-```yaml
----
-title: Interview Notes
-peekText: "Earlier context. Anchor phrase. Later context."
-peekHighlight: "Anchor phrase"
----
-```
-
 ## 4. Site Defaults from YAML
 
-Component-only plugins can receive merged YAML options through the exported `init()` hook. Use this
-for default drag distances across the site.
+Use plugin options for default drag distances across the site.
 
 ```yaml
 plugins:

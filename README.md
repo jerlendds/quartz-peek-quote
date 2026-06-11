@@ -1,8 +1,9 @@
 # Quartz Peek Quotes
 
-`quartz-peek-quotes` is a Quartz v5 component plugin for draggable quote cards. It renders a full
-text excerpt as one laid-out document, marks a configured passage as the anchor, and lets readers
-drag the side handle up or down to reveal surrounding context through a clipped viewport.
+`quartz-peek-quotes` is a Quartz v5 transformer/component plugin for draggable quote cards. It
+renders a full text excerpt as one laid-out document, marks a configured passage as the anchor, and
+lets readers drag the side handle up or down to reveal surrounding context through a clipped
+viewport.
 
 The interaction is a masked reveal, not a scroll container:
 
@@ -19,18 +20,32 @@ Install the plugin in a Quartz v5 site:
 npx quartz plugin add github:jerlendds/quartz-peek-quote
 ```
 
-Add the component to a layout position in `quartz.config.yaml`:
+Enable the plugin in `quartz.config.yaml`:
 
 ```yaml
 plugins:
   - source: github:darkmindsxyz/quartz-peek-quotes
     enabled: true
-    layout:
-      position: right
-      priority: 50
 ```
 
-For TypeScript layout overrides, import it from the generated plugin index:
+Then place a peek quote anywhere in Markdown with a fenced `peek` block:
+
+````md
+```peek
+peekQuote:
+  text: |
+    The witness began with the weather.
+
+    The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.
+
+    Only later did the surrounding details make the statement feel complete.
+  highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
+```
+````
+
+The fenced block renders inline where it appears in the document.
+
+For TypeScript layout overrides, the component is still available for explicit programmatic use:
 
 ```ts
 import Plugin from "./.quartz/plugins";
@@ -45,39 +60,18 @@ export const layout = {
 };
 ```
 
-## Page Frontmatter
-
-If `text` and `highlight` are not passed as component options, the component reads page frontmatter:
-
-```yaml
-peekQuote:
-  text: |
-    Earlier context from the interview.
-
-    The selected sentence remains the anchor.
-
-    Later context can be revealed by dragging down.
-  highlight: "The selected sentence remains the anchor."
-```
-
-Short aliases are also supported:
-
-```yaml
-peekText: "Earlier context. Anchor phrase. Later context."
-peekHighlight: "Anchor phrase"
-```
-
 ## Options
 
-| Option          | Type     | Default           | Description                                     |
-| --------------- | -------- | ----------------- | ----------------------------------------------- |
-| `text`          | `string` | demo              | Full source text rendered in document order.    |
-| `highlight`     | `string` | demo              | Exact text fragment to wrap in the anchor mark. |
-| `className`     | `string` | `peek-quotes`     | Root CSS class.                                 |
-| `handleLabel`   | `string` | descriptive label | Accessible label for the drag handle.           |
-| `maxPeekAbove`  | `number` | `320`             | Maximum pixels revealed above the anchor.       |
-| `maxPeekBelow`  | `number` | `360`             | Maximum pixels revealed below the anchor.       |
-| `snapThreshold` | `number` | `80`              | Drag distance before release snaps open.        |
+| Option          | Type     | Default           | Description                               |
+| --------------- | -------- | ----------------- | ----------------------------------------- |
+| `language`      | `string` | `peek`            | Fenced code language transformed inline.  |
+| `className`     | `string` | `peek-quotes`     | Root CSS class.                           |
+| `handleLabel`   | `string` | descriptive label | Accessible label for the drag handle.     |
+| `maxPeekAbove`  | `number` | `320`             | Maximum pixels revealed above the anchor. |
+| `maxPeekBelow`  | `number` | `360`             | Maximum pixels revealed below the anchor. |
+| `snapThreshold` | `number` | `80`              | Drag distance before release snaps open.  |
+
+The programmatic component also accepts `text` and `highlight`. Frontmatter is not supported.
 
 ## Development
 

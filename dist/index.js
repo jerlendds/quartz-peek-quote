@@ -49,11 +49,10 @@ What stayed with me was her insistence that small details carry the weight of th
 
 Only after that did she return to the question. The archive, she said, is not a box of finished facts. It is a set of invitations, each one asking the reader to decide how much surrounding context they need before the sentence can be understood.`;
 var fallbackHighlight = "small details carry the weight of the larger story";
-function getConfiguredText(props, opts) {
-  const frontmatter = props.fileData?.frontmatter;
+function getConfiguredText(_props, opts) {
   return {
-    text: opts.text ?? frontmatter?.peekQuote?.text ?? frontmatter?.peekText ?? fallbackText,
-    highlight: opts.highlight ?? frontmatter?.peekQuote?.highlight ?? frontmatter?.peekHighlight ?? fallbackHighlight
+    text: opts.text ?? fallbackText,
+    highlight: opts.highlight ?? fallbackHighlight
   };
 }
 function renderHighlightedText(text, highlight) {
@@ -120,11 +119,429 @@ var PeekQuotes_default = ((opts) => {
   return Component;
 });
 
+// node_modules/unist-util-is/lib/index.js
+var convert = (
+  // Note: overloads in JSDoc can’t yet use different `@template`s.
+  /**
+   * @type {(
+   *   (<Condition extends string>(test: Condition) => (node: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & {type: Condition}) &
+   *   (<Condition extends Props>(test: Condition) => (node: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & Condition) &
+   *   (<Condition extends TestFunction>(test: Condition) => (node: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node & Predicate<Condition, Node>) &
+   *   ((test?: null | undefined) => (node?: unknown, index?: number | null | undefined, parent?: Parent | null | undefined, context?: unknown) => node is Node) &
+   *   ((test?: Test) => Check)
+   * )}
+   */
+  /**
+   * @param {Test} [test]
+   * @returns {Check}
+   */
+  (function(test) {
+    if (test === null || test === void 0) {
+      return ok;
+    }
+    if (typeof test === "function") {
+      return castFactory(test);
+    }
+    if (typeof test === "object") {
+      return Array.isArray(test) ? anyFactory(test) : (
+        // Cast because `ReadonlyArray` goes into the above but `isArray`
+        // narrows to `Array`.
+        propertiesFactory(
+          /** @type {Props} */
+          test
+        )
+      );
+    }
+    if (typeof test === "string") {
+      return typeFactory(test);
+    }
+    throw new Error("Expected function, string, or object as test");
+  })
+);
+function anyFactory(tests) {
+  const checks = [];
+  let index = -1;
+  while (++index < tests.length) {
+    checks[index] = convert(tests[index]);
+  }
+  return castFactory(any);
+  function any(...parameters) {
+    let index2 = -1;
+    while (++index2 < checks.length) {
+      if (checks[index2].apply(this, parameters)) return true;
+    }
+    return false;
+  }
+}
+function propertiesFactory(check) {
+  const checkAsRecord = (
+    /** @type {Record<string, unknown>} */
+    check
+  );
+  return castFactory(all);
+  function all(node) {
+    const nodeAsRecord = (
+      /** @type {Record<string, unknown>} */
+      /** @type {unknown} */
+      node
+    );
+    let key;
+    for (key in check) {
+      if (nodeAsRecord[key] !== checkAsRecord[key]) return false;
+    }
+    return true;
+  }
+}
+function typeFactory(check) {
+  return castFactory(type);
+  function type(node) {
+    return node && node.type === check;
+  }
+}
+function castFactory(testFunction) {
+  return check;
+  function check(value, index, parent) {
+    return Boolean(
+      looksLikeANode(value) && testFunction.call(
+        this,
+        value,
+        typeof index === "number" ? index : void 0,
+        parent || void 0
+      )
+    );
+  }
+}
+function ok() {
+  return true;
+}
+function looksLikeANode(value) {
+  return value !== null && typeof value === "object" && "type" in value;
+}
+
+// node_modules/unist-util-visit-parents/lib/color.node.js
+function color(d2) {
+  return "\x1B[33m" + d2 + "\x1B[39m";
+}
+
+// node_modules/unist-util-visit-parents/lib/index.js
+var empty = [];
+var CONTINUE = true;
+var EXIT = false;
+var SKIP = "skip";
+function visitParents(tree, test, visitor, reverse) {
+  let check;
+  if (typeof test === "function" && typeof visitor !== "function") {
+    reverse = visitor;
+    visitor = test;
+  } else {
+    check = test;
+  }
+  const is2 = convert(check);
+  const step = reverse ? -1 : 1;
+  factory(tree, void 0, [])();
+  function factory(node, index, parents) {
+    const value = (
+      /** @type {Record<string, unknown>} */
+      node && typeof node === "object" ? node : {}
+    );
+    if (typeof value.type === "string") {
+      const name = (
+        // `hast`
+        typeof value.tagName === "string" ? value.tagName : (
+          // `xast`
+          typeof value.name === "string" ? value.name : void 0
+        )
+      );
+      Object.defineProperty(visit2, "name", {
+        value: "node (" + color(node.type + (name ? "<" + name + ">" : "")) + ")"
+      });
+    }
+    return visit2;
+    function visit2() {
+      let result = empty;
+      let subresult;
+      let offset;
+      let grandparents;
+      if (!test || is2(node, index, parents[parents.length - 1] || void 0)) {
+        result = toResult(visitor(node, parents));
+        if (result[0] === EXIT) {
+          return result;
+        }
+      }
+      if ("children" in node && node.children) {
+        const nodeAsParent = (
+          /** @type {UnistParent} */
+          node
+        );
+        if (nodeAsParent.children && result[0] !== SKIP) {
+          offset = (reverse ? nodeAsParent.children.length : -1) + step;
+          grandparents = parents.concat(nodeAsParent);
+          while (offset > -1 && offset < nodeAsParent.children.length) {
+            const child = nodeAsParent.children[offset];
+            subresult = factory(child, offset, grandparents)();
+            if (subresult[0] === EXIT) {
+              return subresult;
+            }
+            offset = typeof subresult[1] === "number" ? subresult[1] : offset + step;
+          }
+        }
+      }
+      return result;
+    }
+  }
+}
+function toResult(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === "number") {
+    return [CONTINUE, value];
+  }
+  return value === null || value === void 0 ? empty : [value];
+}
+
+// node_modules/unist-util-visit/lib/index.js
+function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
+  let reverse;
+  let test;
+  let visitor;
+  {
+    test = testOrVisitor;
+    visitor = visitorOrReverse;
+    reverse = maybeReverse;
+  }
+  visitParents(tree, test, overload, reverse);
+  function overload(node, parents) {
+    const parent = parents[parents.length - 1];
+    const index = parent ? parent.children.indexOf(node) : void 0;
+    return visitor(node, index, parent);
+  }
+}
+
+// src/transformer.ts
+var defaultOptions = {
+  language: "peek",
+  className: "peek-quotes",
+  handleLabel: "Drag to peek around highlighted quote",
+  maxPeekAbove: 320,
+  maxPeekBelow: 360,
+  snapThreshold: 80
+};
+var dedent = (value) => {
+  const lines = value.replace(/\s+$/g, "").split("\n");
+  const indents = lines.filter((line) => line.trim().length > 0).map((line) => line.match(/^\s*/)?.[0].length ?? 0);
+  const indent = indents.length > 0 ? Math.min(...indents) : 0;
+  return lines.map((line) => line.slice(indent)).join("\n");
+};
+var unquote = (value) => {
+  const trimmed = value.trim();
+  const quote = trimmed[0];
+  if ((quote === `"` || quote === `'`) && trimmed.endsWith(quote)) {
+    return trimmed.slice(1, -1).replace(/\\n/g, "\n").replace(/\\"/g, `"`).replace(/\\'/g, `'`).replace(/\\\\/g, "\\");
+  }
+  return trimmed;
+};
+var readNumber = (value) => {
+  if (value === void 0) return void 0;
+  const parsed = Number(unquote(value));
+  return Number.isFinite(parsed) ? parsed : void 0;
+};
+function parsePeekQuote(value) {
+  const lines = value.replace(/\r\n?/g, "\n").split("\n");
+  const rootIndex = lines.findIndex((line) => /^peekQuote:\s*$/.test(line));
+  if (rootIndex < 0) return null;
+  const fields = {};
+  for (let index = rootIndex + 1; index < lines.length; index++) {
+    const line = lines[index];
+    if (line === void 0) continue;
+    const match = line.match(/^ {2}([A-Za-z][\w-]*):(?:\s*(.*))?$/);
+    if (!match) continue;
+    const key = match[1];
+    const rawValue = match[2] ?? "";
+    if (!key) continue;
+    if (rawValue.trim() === "|") {
+      const blockLines = [];
+      index++;
+      while (index < lines.length) {
+        const blockLine = lines[index];
+        if (blockLine === void 0 || /^ {2}[A-Za-z][\w-]*:/.test(blockLine)) break;
+        blockLines.push(blockLine);
+        index++;
+      }
+      index--;
+      fields[key] = dedent(blockLines.join("\n"));
+    } else {
+      fields[key] = unquote(rawValue);
+    }
+  }
+  const text = fields.text?.trim();
+  const highlight = fields.highlight?.trim();
+  if (!text || !highlight) return null;
+  return {
+    text,
+    highlight,
+    maxPeekAbove: readNumber(fields.maxPeekAbove),
+    maxPeekBelow: readNumber(fields.maxPeekBelow),
+    snapThreshold: readNumber(fields.snapThreshold)
+  };
+}
+var textNode = (value) => ({ type: "text", value });
+function renderTextFragments2(value) {
+  return value.split(/(\n{2,})/).flatMap((block) => {
+    if (block.length === 0) return [];
+    if (/^\n{2,}$/.test(block)) {
+      return [
+        {
+          type: "element",
+          tagName: "span",
+          properties: {
+            className: ["peek-quotes__paragraph-break"],
+            ariaHidden: "true"
+          },
+          children: []
+        }
+      ];
+    }
+    return [textNode(block)];
+  });
+}
+function renderHighlightedText2(text, highlight) {
+  const index = highlight.length > 0 ? text.indexOf(highlight) : -1;
+  if (index < 0) return renderTextFragments2(text);
+  return [
+    ...renderTextFragments2(text.slice(0, index)),
+    {
+      type: "element",
+      tagName: "mark",
+      properties: {
+        className: ["peek-quotes__highlight"],
+        "data-peek-highlight": "true"
+      },
+      children: [textNode(text.slice(index, index + highlight.length))]
+    },
+    ...renderTextFragments2(text.slice(index + highlight.length))
+  ];
+}
+function createPeekQuoteElement(data, options) {
+  const maxPeekAbove = data.maxPeekAbove ?? options.maxPeekAbove;
+  const maxPeekBelow = data.maxPeekBelow ?? options.maxPeekBelow;
+  const snapThreshold = data.snapThreshold ?? options.snapThreshold;
+  return {
+    type: "element",
+    tagName: "div",
+    properties: {
+      className: [options.className],
+      "data-peek-quotes": "true",
+      "data-max-peek-above": String(maxPeekAbove),
+      "data-max-peek-below": String(maxPeekBelow),
+      "data-snap-threshold": String(snapThreshold)
+    },
+    children: [
+      {
+        type: "element",
+        tagName: "div",
+        properties: { className: ["peek-quotes__shell"] },
+        children: [
+          {
+            type: "element",
+            tagName: "div",
+            properties: {
+              className: ["peek-quotes__rail"],
+              ariaHidden: "true"
+            },
+            children: [
+              {
+                type: "element",
+                tagName: "div",
+                properties: {
+                  className: ["peek-quotes__line"],
+                  "data-peek-line": "true"
+                },
+                children: []
+              }
+            ]
+          },
+          {
+            type: "element",
+            tagName: "button",
+            properties: {
+              className: ["peek-quotes__handle"],
+              type: "button",
+              "data-peek-handle": "true",
+              ariaLabel: options.handleLabel
+            },
+            children: []
+          },
+          {
+            type: "element",
+            tagName: "div",
+            properties: {
+              className: ["peek-quotes__viewport"],
+              "data-peek-viewport": "true"
+            },
+            children: [
+              {
+                type: "element",
+                tagName: "div",
+                properties: {
+                  className: ["peek-quotes__document"],
+                  "data-peek-document": "true"
+                },
+                children: renderHighlightedText2(data.text, data.highlight)
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+}
+var remarkPeekQuotes = (options) => {
+  return () => (tree) => {
+    visit(tree, "code", (node) => {
+      if (node.lang !== options.language) return;
+      const data = parsePeekQuote(node.value);
+      if (!data) return;
+      const replacement = node;
+      replacement.type = "paragraph";
+      replacement.children = [];
+      replacement.data = {
+        hName: "div",
+        hProperties: {},
+        hChildren: [createPeekQuoteElement(data, options)]
+      };
+    });
+  };
+};
+var PeekQuotesTransformer = (userOptions) => {
+  const options = { ...defaultOptions, ...userOptions };
+  return {
+    name: "PeekQuotesTransformer",
+    markdownPlugins() {
+      return [remarkPeekQuotes(options)];
+    },
+    externalResources() {
+      return {
+        css: [{ content: peek_quotes_default, inline: true }],
+        js: [
+          {
+            contentType: "inline",
+            loadTime: "afterDOMReady",
+            script: peek_quotes_inline_default
+          }
+        ],
+        additionalHead: []
+      };
+    }
+  };
+};
+var transformer = PeekQuotesTransformer;
+
 // src/index.ts
 function init(options) {
   initPeekQuotes(options);
 }
 
-export { PeekQuotes_default as PeekQuotes, init, initPeekQuotes };
+export { PeekQuotes_default as PeekQuotes, PeekQuotesTransformer, init, initPeekQuotes, transformer };
 //# sourceMappingURL=index.js.map
 //# sourceMappingURL=index.js.map

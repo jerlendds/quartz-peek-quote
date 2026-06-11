@@ -2,13 +2,11 @@ import { QuartzComponent } from '@quartz-community/types';
 
 interface PeekQuotesOptions {
     /**
-     * Full source text to render in the peek card. If omitted, the component
-     * reads frontmatter.peekQuote.text or frontmatter.peekText.
+     * Full source text to render in the peek card.
      */
     text?: string;
     /**
-     * Exact text fragment to mark as the semantic anchor. If omitted, the
-     * component reads frontmatter.peekQuote.highlight or frontmatter.peekHighlight.
+     * Exact text fragment to mark as the semantic anchor.
      */
     highlight?: string;
     /** Optional class added to the root element. */

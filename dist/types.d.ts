@@ -1,14 +1,18 @@
 export { BuildCtx, CSSResource, ChangeEvent, JSResource, PageGenerator, PageMatcher, ProcessedContent, QuartzEmitterPlugin, QuartzEmitterPluginInstance, QuartzFilterPlugin, QuartzFilterPluginInstance, QuartzPageTypePlugin, QuartzPageTypePluginInstance, QuartzPluginData, QuartzTransformerPlugin, QuartzTransformerPluginInstance, StaticResources, VirtualPage } from '@quartz-community/types';
 
-interface ExampleTransformerOptions {
-    /** Token used to highlight text, defaults to ==highlight== */
-    highlightToken: string;
-    /** Add a CSS class to all headings in the rendered HTML. */
-    headingClass: string;
-    /** Enable remark-gfm for tables/task lists. */
-    enableGfm: boolean;
-    /** Enable adding slug IDs to headings. */
-    addHeadingSlugs: boolean;
+interface PeekQuotesTransformerOptions {
+    /** Fenced code block language to transform. */
+    language: string;
+    /** CSS class name to apply to the root element. */
+    className: string;
+    /** Accessible label for the drag handle. */
+    handleLabel: string;
+    /** Maximum pixels revealed above the highlight. */
+    maxPeekAbove: number;
+    /** Maximum pixels revealed below the highlight. */
+    maxPeekBelow: number;
+    /** Drag distance before release snaps open. */
+    snapThreshold: number;
 }
 interface ExampleFilterOptions {
     /** Allow pages marked draft: true to publish. */
@@ -47,4 +51,4 @@ interface PeekQuotesOptions {
     snapThreshold?: number;
 }
 
-export type { ExampleEmitterOptions, ExampleFilterOptions, ExampleTransformerOptions, PeekQuotesOptions };
+export type { ExampleEmitterOptions, ExampleFilterOptions, PeekQuotesOptions, PeekQuotesTransformerOptions };

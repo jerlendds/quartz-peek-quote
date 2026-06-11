@@ -18,7 +18,7 @@ describe("PeekQuotes", () => {
     expect(html).toContain("Anchor phrase");
   });
 
-  it("reads text and highlight from frontmatter", () => {
+  it("does not read text and highlight from frontmatter", () => {
     const Component = PeekQuotes();
 
     const html = render(
@@ -35,8 +35,9 @@ describe("PeekQuotes", () => {
       ) as VNode,
     );
 
-    expect(html).toContain("Earlier words");
-    expect(html).toContain("The selected sentence");
-    expect(html).toContain("Later words");
+    expect(html).not.toContain("Earlier words");
+    expect(html).not.toContain("The selected sentence");
+    expect(html).not.toContain("Later words");
+    expect(html).toContain("small details carry the weight of the larger story");
   });
 });

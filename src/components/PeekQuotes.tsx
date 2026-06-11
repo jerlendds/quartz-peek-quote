@@ -10,13 +10,11 @@ import script from "./scripts/peek-quotes.inline.ts";
 
 export interface PeekQuotesOptions {
   /**
-   * Full source text to render in the peek card. If omitted, the component
-   * reads frontmatter.peekQuote.text or frontmatter.peekText.
+   * Full source text to render in the peek card.
    */
   text?: string;
   /**
-   * Exact text fragment to mark as the semantic anchor. If omitted, the
-   * component reads frontmatter.peekQuote.highlight or frontmatter.peekHighlight.
+   * Exact text fragment to mark as the semantic anchor.
    */
   highlight?: string;
   /** Optional class added to the root element. */
@@ -30,15 +28,6 @@ export interface PeekQuotesOptions {
   /** Pixels dragged before release snaps open instead of closed. */
   snapThreshold?: number;
 }
-
-type PeekQuoteFrontmatter = {
-  peekQuote?: {
-    text?: string;
-    highlight?: string;
-  };
-  peekText?: string;
-  peekHighlight?: string;
-};
 
 let configuredOptions: PeekQuotesOptions = {};
 
@@ -57,18 +46,12 @@ Only after that did she return to the question. The archive, she said, is not a 
 const fallbackHighlight = "small details carry the weight of the larger story";
 
 function getConfiguredText(
-  props: QuartzComponentProps,
+  _props: QuartzComponentProps,
   opts: PeekQuotesOptions,
 ): { text: string; highlight: string } {
-  const frontmatter = props.fileData?.frontmatter as PeekQuoteFrontmatter | undefined;
-
   return {
-    text: opts.text ?? frontmatter?.peekQuote?.text ?? frontmatter?.peekText ?? fallbackText,
-    highlight:
-      opts.highlight ??
-      frontmatter?.peekQuote?.highlight ??
-      frontmatter?.peekHighlight ??
-      fallbackHighlight,
+    text: opts.text ?? fallbackText,
+    highlight: opts.highlight ?? fallbackHighlight,
   };
 }
 

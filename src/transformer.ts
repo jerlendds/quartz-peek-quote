@@ -1,99 +1,271 @@
-import type { PluggableList, Plugin } from "unified";
-import type { Root as MdastRoot } from "mdast";
-import type { Root as HastRoot, Element } from "hast";
-import type { VFile } from "vfile";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import { findAndReplace } from "mdast-util-find-and-replace";
+import type { Plugin } from "unified";
+import type { Code, Root as MdastRoot } from "mdast";
+import type { Element, ElementContent } from "hast";
 import { visit } from "unist-util-visit";
-import type { QuartzTransformerPlugin, BuildCtx } from "@quartz-community/types";
-import type { ExampleTransformerOptions } from "./types";
+import type { QuartzTransformerPlugin } from "@quartz-community/types";
+import type { PeekQuotesTransformerOptions } from "./types";
+import style from "./components/styles/peek-quotes.scss";
+// @ts-expect-error - inline script import handled by Quartz bundler
+import script from "./components/scripts/peek-quotes.inline.ts";
 
-const defaultOptions: ExampleTransformerOptions = {
-  highlightToken: "==",
-  headingClass: "example-plugin-heading",
-  enableGfm: true,
-  addHeadingSlugs: true,
+type PeekQuoteData = {
+  text: string;
+  highlight: string;
+  maxPeekAbove?: number;
+  maxPeekBelow?: number;
+  snapThreshold?: number;
 };
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-const remarkHighlightToken = (token: string): Plugin<[], MdastRoot> => {
-  const escapedToken = escapeRegExp(token);
-  const pattern = new RegExp(`${escapedToken}([^\n]+?)${escapedToken}`, "g");
-  return () => (tree: MdastRoot, _file: VFile) => {
-    findAndReplace(tree, [
-      [
-        pattern,
-        (_match: string, value: string) => ({
-          type: "strong",
-          children: [{ type: "text", value }],
-        }),
-      ],
-    ]);
-  };
+const defaultOptions: Required<PeekQuotesTransformerOptions> = {
+  language: "peek",
+  className: "peek-quotes",
+  handleLabel: "Drag to peek around highlighted quote",
+  maxPeekAbove: 320,
+  maxPeekBelow: 360,
+  snapThreshold: 80,
 };
 
-const rehypeHeadingClass = (className: string): Plugin<[], HastRoot> => {
-  return () => (tree: HastRoot, _file: VFile) => {
-    visit(tree, "element", (node: Element) => {
-      if (!/^h[1-6]$/.test(node.tagName)) {
-        return;
+const dedent = (value: string) => {
+  const lines = value.replace(/\s+$/g, "").split("\n");
+  const indents = lines
+    .filter((line) => line.trim().length > 0)
+    .map((line) => line.match(/^\s*/)?.[0].length ?? 0);
+  const indent = indents.length > 0 ? Math.min(...indents) : 0;
+  return lines.map((line) => line.slice(indent)).join("\n");
+};
+
+const unquote = (value: string) => {
+  const trimmed = value.trim();
+  const quote = trimmed[0];
+  if ((quote === `"` || quote === `'`) && trimmed.endsWith(quote)) {
+    return trimmed
+      .slice(1, -1)
+      .replace(/\\n/g, "\n")
+      .replace(/\\"/g, `"`)
+      .replace(/\\'/g, `'`)
+      .replace(/\\\\/g, "\\");
+  }
+  return trimmed;
+};
+
+const readNumber = (value: string | undefined) => {
+  if (value === undefined) return undefined;
+  const parsed = Number(unquote(value));
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+function parsePeekQuote(value: string): PeekQuoteData | null {
+  const lines = value.replace(/\r\n?/g, "\n").split("\n");
+  const rootIndex = lines.findIndex((line) => /^peekQuote:\s*$/.test(line));
+  if (rootIndex < 0) return null;
+
+  const fields: Record<string, string> = {};
+
+  for (let index = rootIndex + 1; index < lines.length; index++) {
+    const line = lines[index];
+    if (line === undefined) continue;
+
+    const match = line.match(/^ {2}([A-Za-z][\w-]*):(?:\s*(.*))?$/);
+    if (!match) continue;
+
+    const key = match[1];
+    const rawValue = match[2] ?? "";
+    if (!key) continue;
+
+    if (rawValue.trim() === "|") {
+      const blockLines: string[] = [];
+      index++;
+      while (index < lines.length) {
+        const blockLine = lines[index];
+        if (blockLine === undefined || /^ {2}[A-Za-z][\w-]*:/.test(blockLine)) break;
+
+        blockLines.push(blockLine);
+        index++;
       }
+      index--;
+      fields[key] = dedent(blockLines.join("\n"));
+    } else {
+      fields[key] = unquote(rawValue);
+    }
+  }
 
-      const existing = node.properties?.className;
-      const classes: string[] = Array.isArray(existing)
-        ? existing.filter((value): value is string => typeof value === "string")
-        : typeof existing === "string"
-          ? [existing]
-          : [];
-      node.properties = {
-        ...node.properties,
-        className: [...classes, className],
+  const text = fields.text?.trim();
+  const highlight = fields.highlight?.trim();
+  if (!text || !highlight) return null;
+
+  return {
+    text,
+    highlight,
+    maxPeekAbove: readNumber(fields.maxPeekAbove),
+    maxPeekBelow: readNumber(fields.maxPeekBelow),
+    snapThreshold: readNumber(fields.snapThreshold),
+  };
+}
+
+const textNode = (value: string): ElementContent => ({ type: "text", value });
+
+function renderTextFragments(value: string): ElementContent[] {
+  return value.split(/(\n{2,})/).flatMap((block): ElementContent[] => {
+    if (block.length === 0) return [];
+    if (/^\n{2,}$/.test(block)) {
+      return [
+        {
+          type: "element",
+          tagName: "span",
+          properties: {
+            className: ["peek-quotes__paragraph-break"],
+            ariaHidden: "true",
+          },
+          children: [],
+        },
+      ];
+    }
+    return [textNode(block)];
+  });
+}
+
+function renderHighlightedText(text: string, highlight: string): ElementContent[] {
+  const index = highlight.length > 0 ? text.indexOf(highlight) : -1;
+  if (index < 0) return renderTextFragments(text);
+
+  return [
+    ...renderTextFragments(text.slice(0, index)),
+    {
+      type: "element",
+      tagName: "mark",
+      properties: {
+        className: ["peek-quotes__highlight"],
+        "data-peek-highlight": "true",
+      },
+      children: [textNode(text.slice(index, index + highlight.length))],
+    },
+    ...renderTextFragments(text.slice(index + highlight.length)),
+  ];
+}
+
+function createPeekQuoteElement(
+  data: PeekQuoteData,
+  options: Required<PeekQuotesTransformerOptions>,
+): Element {
+  const maxPeekAbove = data.maxPeekAbove ?? options.maxPeekAbove;
+  const maxPeekBelow = data.maxPeekBelow ?? options.maxPeekBelow;
+  const snapThreshold = data.snapThreshold ?? options.snapThreshold;
+
+  return {
+    type: "element",
+    tagName: "div",
+    properties: {
+      className: [options.className],
+      "data-peek-quotes": "true",
+      "data-max-peek-above": String(maxPeekAbove),
+      "data-max-peek-below": String(maxPeekBelow),
+      "data-snap-threshold": String(snapThreshold),
+    },
+    children: [
+      {
+        type: "element",
+        tagName: "div",
+        properties: { className: ["peek-quotes__shell"] },
+        children: [
+          {
+            type: "element",
+            tagName: "div",
+            properties: {
+              className: ["peek-quotes__rail"],
+              ariaHidden: "true",
+            },
+            children: [
+              {
+                type: "element",
+                tagName: "div",
+                properties: {
+                  className: ["peek-quotes__line"],
+                  "data-peek-line": "true",
+                },
+                children: [],
+              },
+            ],
+          },
+          {
+            type: "element",
+            tagName: "button",
+            properties: {
+              className: ["peek-quotes__handle"],
+              type: "button",
+              "data-peek-handle": "true",
+              ariaLabel: options.handleLabel,
+            },
+            children: [],
+          },
+          {
+            type: "element",
+            tagName: "div",
+            properties: {
+              className: ["peek-quotes__viewport"],
+              "data-peek-viewport": "true",
+            },
+            children: [
+              {
+                type: "element",
+                tagName: "div",
+                properties: {
+                  className: ["peek-quotes__document"],
+                  "data-peek-document": "true",
+                },
+                children: renderHighlightedText(data.text, data.highlight),
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+const remarkPeekQuotes = (
+  options: Required<PeekQuotesTransformerOptions>,
+): Plugin<[], MdastRoot> => {
+  return () => (tree: MdastRoot) => {
+    visit(tree, "code", (node: Code) => {
+      if (node.lang !== options.language) return;
+
+      const data = parsePeekQuote(node.value);
+      if (!data) return;
+
+      const replacement = node as unknown as {
+        type: "paragraph";
+        children: [];
+        data: Code["data"];
+      };
+      replacement.type = "paragraph";
+      replacement.children = [];
+      replacement.data = {
+        hName: "div",
+        hProperties: {},
+        hChildren: [createPeekQuoteElement(data, options)],
       };
     });
   };
 };
 
-/**
- * Example transformer showing remark/rehype usage and resource injection.
- */
-export const ExampleTransformer: QuartzTransformerPlugin<Partial<ExampleTransformerOptions>> = (
-  userOptions?: Partial<ExampleTransformerOptions>,
-) => {
+export const PeekQuotesTransformer: QuartzTransformerPlugin<
+  Partial<PeekQuotesTransformerOptions>
+> = (userOptions?: Partial<PeekQuotesTransformerOptions>) => {
   const options = { ...defaultOptions, ...userOptions };
+
   return {
-    name: "ExampleTransformer",
-    textTransform(_ctx: BuildCtx, src: string) {
-      return src.endsWith("\n") ? src : `${src}\n`;
-    },
-    markdownPlugins(): PluggableList {
-      const plugins: PluggableList = [remarkHighlightToken(options.highlightToken)];
-      if (options.enableGfm) {
-        plugins.unshift(remarkGfm);
-      }
-      return plugins;
-    },
-    htmlPlugins(): PluggableList {
-      const plugins: PluggableList = [rehypeHeadingClass(options.headingClass)];
-      if (options.addHeadingSlugs) {
-        plugins.unshift(rehypeSlug);
-      }
-      return plugins;
+    name: "PeekQuotesTransformer",
+    markdownPlugins() {
+      return [remarkPeekQuotes(options)];
     },
     externalResources() {
       return {
-        css: [
-          {
-            content: `.${options.headingClass} { letter-spacing: 0.02em; }`,
-            inline: true,
-          },
-        ],
+        css: [{ content: style, inline: true }],
         js: [
           {
             contentType: "inline",
             loadTime: "afterDOMReady",
-            script: "document.documentElement.dataset.exampleTransformer = 'true'",
+            script,
           },
         ],
         additionalHead: [],
@@ -101,3 +273,5 @@ export const ExampleTransformer: QuartzTransformerPlugin<Partial<ExampleTransfor
     },
   };
 };
+
+export const transformer = PeekQuotesTransformer;

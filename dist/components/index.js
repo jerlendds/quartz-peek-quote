@@ -49,11 +49,10 @@ What stayed with me was her insistence that small details carry the weight of th
 
 Only after that did she return to the question. The archive, she said, is not a box of finished facts. It is a set of invitations, each one asking the reader to decide how much surrounding context they need before the sentence can be understood.`;
 var fallbackHighlight = "small details carry the weight of the larger story";
-function getConfiguredText(props, opts) {
-  const frontmatter = props.fileData?.frontmatter;
+function getConfiguredText(_props, opts) {
   return {
-    text: opts.text ?? frontmatter?.peekQuote?.text ?? frontmatter?.peekText ?? fallbackText,
-    highlight: opts.highlight ?? frontmatter?.peekQuote?.highlight ?? frontmatter?.peekHighlight ?? fallbackHighlight
+    text: opts.text ?? fallbackText,
+    highlight: opts.highlight ?? fallbackHighlight
   };
 }
 function renderHighlightedText(text, highlight) {
