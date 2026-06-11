@@ -2,7 +2,9 @@ import type {
   BuildCtx,
   FilePath,
   FullSlug,
+  GlobalConfiguration,
   QuartzConfig,
+  QuartzComponentProps,
   ProcessedContent,
   QuartzPluginData,
 } from "@quartz-community/types";
@@ -42,6 +44,22 @@ export const createProcessedContent = (data: Partial<QuartzPluginData> = {}): Pr
   vfile.data = data;
   return [{ type: "root", children: [] }, vfile];
 };
+
+export const createComponentProps = (
+  data: Partial<QuartzPluginData> = {},
+): QuartzComponentProps => ({
+  ctx: {},
+  externalResources: {
+    css: [],
+    js: [],
+    additionalHead: [],
+  },
+  fileData: data as QuartzPluginData,
+  cfg: {} as GlobalConfiguration,
+  children: [],
+  tree: { type: "root", children: [] },
+  allFiles: [],
+});
 
 export const assertFilePath = (value: string): FilePath => {
   if (!isFilePath(value)) {

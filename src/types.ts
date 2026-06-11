@@ -52,11 +52,19 @@ export interface ExampleEmitterOptions {
   manifestScriptClass?: string;
 }
 
-export interface ExampleComponentOptions {
-  /** Text to prefix before the title */
-  prefix?: string;
-  /** Text to suffix after the title */
-  suffix?: string;
-  /** CSS class name to apply */
+export interface PeekQuotesOptions {
+  /** Full source text to render in the clipped viewport. */
+  text?: string;
+  /** Exact text fragment to mark as the semantic anchor. */
+  highlight?: string;
+  /** CSS class name to apply to the root element. */
   className?: string;
+  /** Accessible label for the drag handle. */
+  handleLabel?: string;
+  /** Maximum pixels revealed above the highlight. */
+  maxPeekAbove?: number;
+  /** Maximum pixels revealed below the highlight. */
+  maxPeekBelow?: number;
+  /** Drag distance before release snaps open. */
+  snapThreshold?: number;
 }

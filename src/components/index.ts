@@ -1,2 +1,3 @@
-export { default as ExampleComponent } from "./ExampleComponent";
-export type { ExampleComponentOptions } from "./ExampleComponent";
+export { default as PeekQuotes } from "./PeekQuotes";
+export { initPeekQuotes } from "./PeekQuotes";
+export type { PeekQuotesOptions } from "./PeekQuotes";

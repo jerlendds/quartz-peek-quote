@@ -1,7 +1,8 @@
 export { ExampleTransformer } from "./transformer";
 export { ExampleFilter } from "./filter";
 export { ExampleEmitter } from "./emitter";
-export { default as ExampleComponent } from "./components/ExampleComponent";
+export { default as PeekQuotes, initPeekQuotes } from "./components/PeekQuotes";
+import { initPeekQuotes } from "./components/PeekQuotes";
 
 export type {
   ExampleTransformerOptions,
@@ -9,7 +10,11 @@ export type {
   ExampleEmitterOptions,
 } from "./types";
 
-export type { ExampleComponentOptions } from "./components/ExampleComponent";
+export type { PeekQuotesOptions } from "./components/PeekQuotes";
+
+export function init(options?: Record<string, unknown>): void {
+  initPeekQuotes(options);
+}
 
 // Re-export shared types from @quartz-community/types
 export type {

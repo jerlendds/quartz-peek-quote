@@ -1,19 +1,21 @@
 {
-  "name": "@quartz-community/plugin-template",
+  "name": "quartz-peek-quotes",
   "version": "0.1.0",
-  "description": "Template repository for Quartz community plugins.",
+  "description": "Quartz component plugin for draggable peek quote cards anchored to highlighted text.",
   "type": "module",
   "license": "MIT",
   "author": "Quartz Community",
   "homepage": "https://quartz.jzhao.xyz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/quartz-community/plugin-template"
+    "url": "https://github.com/darkmindsxyz/quartz-peek-quotes"
   },
   "keywords": [
     "quartz",
     "quartz-plugin",
-    "plugin-template",
+    "peek-quotes",
+    "quotes",
+    "component",
     "remark",
     "rehype",
     "mdast",
@@ -94,29 +96,42 @@
     "vitest": "^2.1.9"
   },
   "quartz": {
-    "name": "plugin-template",
-    "displayName": "Plugin Template",
-    "category": "transformer",
+    "name": "peek-quotes",
+    "displayName": "Peek Quotes",
+    "category": [
+      "component"
+    ],
     "version": "1.0.0",
     "quartzVersion": ">=5.0.0",
     "dependencies": [],
     "defaultOrder": 50,
     "defaultEnabled": true,
-    "defaultOptions": {},
+    "defaultOptions": {
+      "maxPeekAbove": 320,
+      "maxPeekBelow": 360,
+      "snapThreshold": 80
+    },
     "optionSchema": {
-      "highlightToken": {
-        "type": "enum",
-        "values": [
-          "==",
-          "**",
-          "~~"
-        ]
+      "text": {
+        "type": "string"
+      },
+      "highlight": {
+        "type": "string"
+      },
+      "maxPeekAbove": {
+        "type": "number"
+      },
+      "maxPeekBelow": {
+        "type": "number"
+      },
+      "snapThreshold": {
+        "type": "number"
       }
     },
     "components": {
-      "ExampleComponent": {
-        "displayName": "Example Component",
-        "defaultPosition": "right",
+      "PeekQuotes": {
+        "displayName": "Peek Quotes",
+        "defaultPosition": "center",
         "defaultPriority": 50
       }
     }

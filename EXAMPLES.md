@@ -1,132 +1,140 @@
-# Plugin Examples
+# Peek Quotes Examples
 
-Minimal, annotated examples for each Quartz plugin type.
+Practical examples for using `quartz-peek-quotes` in a Quartz v5 site.
 
-## 1. Minimal Transformer
+## 1. Add the Component to a Layout
 
-Wraps an existing remark plugin to enforce hard line breaks.
+Install the plugin, then place `PeekQuotes` in a Quartz layout slot.
 
-```ts
-import remarkBreaks from "remark-breaks";
-import type { QuartzTransformerPlugin } from "@quartz-community/types";
-
-export const HardLineBreaks: QuartzTransformerPlugin<void> = () => ({
-  name: "HardLineBreaks",
-  markdownPlugins() {
-    // Return a list of unified/remark plugins
-    return [remarkBreaks];
-  },
-});
+```yaml
+plugins:
+  - source: github:darkmindsxyz/quartz-peek-quotes
+    enabled: true
+    layout:
+      position: right
+      priority: 50
 ```
 
-## 2. Minimal Filter
-
-Excludes pages marked as `draft: true` in frontmatter.
+The component can also be instantiated directly from a TypeScript layout override:
 
 ```ts
-import type { QuartzFilterPlugin } from "@quartz-community/types";
+import Plugin from "./.quartz/plugins";
 
-export const RemoveDrafts: QuartzFilterPlugin<void> = () => ({
-  name: "RemoveDrafts",
-  shouldPublish(_ctx, [_tree, vfile]) {
-    // Access frontmatter from vfile data
-    const draft = vfile.data?.frontmatter?.draft;
-    // Return false to exclude the page from the build
-    return draft !== true;
-  },
-});
-```
-
-## 3. Minimal Emitter
-
-Writes a `CNAME` file to the output directory.
-
-```ts
-import fs from "node:fs/promises";
-import path from "node:path";
-import type { QuartzEmitterPlugin } from "@quartz-community/types";
-
-export const CNAME: QuartzEmitterPlugin<{ domain: string }> = (opts) => ({
-  name: "CNAME",
-  async emit(ctx, _content, _resources) {
-    // ctx.argv.output is the destination directory
-    const filePath = path.join(ctx.argv.output, "CNAME");
-    await fs.writeFile(filePath, opts.domain);
-    // Return the list of emitted file paths
-    return [filePath as any];
-  },
-});
-```
-
-## 4. Minimal Component
-
-Renders a simple spacer div with custom CSS.
-
-```tsx
-import type { QuartzComponent, QuartzComponentConstructor } from "@quartz-community/types";
-
-export default ((opts?: { height?: string }) => {
-  const Component: QuartzComponent = () => {
-    return <div class="spacer" style={{ height: opts?.height ?? "1rem" }} />;
-  };
-
-  // Attach CSS string to the component
-  Component.css = ".spacer { width: 100%; }";
-  return Component;
-}) satisfies QuartzComponentConstructor;
-```
-
-## 5. Minimal Page Type
-
-Generates a virtual "About" page if it doesn't exist.
-
-```ts
-import type { QuartzPageTypePlugin } from "@quartz-community/types";
-
-export const AboutPage: QuartzPageTypePlugin<void> = () => ({
-  name: "AboutPage",
-  // Match the slug to handle
-  match: (slug) => slug === "about",
-  // Generate the page content
-  generate: async (_ctx, _content) => ({
-    slug: "about" as any,
-    frontmatter: { title: "About" },
-    content: "This is a virtual about page.",
-  }),
-});
-```
-
-## 6. Minimal Bases View Registration
-
-Registers a custom view for the `@quartz-community/bases-page` system.
-
-```ts
-import { viewRegistry } from "@quartz-community/bases-page";
-
-export function init() {
-  // Register a view that can be used in bases-page layouts
-  viewRegistry.register("my-custom-view", (props) => {
-    return <div>Custom View for {props.fileData.slug}</div>;
-  });
-}
-```
-
-## 7. Minimal i18n Setup
-
-Per-plugin translations with a fallback mechanism.
-
-```ts
-// src/i18n/locales/en-US.ts
-export default {
-  hello: "Hello",
+export const layout = {
+  right: [Plugin.PeekQuotes()],
 };
+```
 
-// src/i18n/index.ts
-import enUS from "./locales/en-US";
-const locales = { "en-US": enUS };
+## 2. Static Quote Text
 
-export function i18n(locale: string) {
-  // Fallback to en-US if locale is not found
-  return locales[locale as keyof typeof locales] || enUS;
+Pass the full document text and the exact highlighted fragment to the component.
+
+```ts
+import Plugin from "./.quartz/plugins";
+
+export const layout = {
+  right: [
+    Plugin.PeekQuotes({
+      text: `The witness began with the weather.
+
+The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.
+
+Only later did the surrounding details make the statement feel complete.`,
+      highlight:
+        "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.",
+    }),
+  ],
+};
+```
+
+## 3. Frontmatter-Driven Quote
+
+If no `text` or `highlight` option is passed, the component reads the current page frontmatter.
+
+```yaml
+---
+title: Interview Notes
+peekQuote:
+  text: |
+    The witness began with the weather.
+
+    The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.
+
+    Only later did the surrounding details make the statement feel complete.
+  highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
+---
+```
+
+Short aliases are supported too:
+
+```yaml
+---
+title: Interview Notes
+peekText: "Earlier context. Anchor phrase. Later context."
+peekHighlight: "Anchor phrase"
+---
+```
+
+## 4. Site Defaults from YAML
+
+Component-only plugins can receive merged YAML options through the exported `init()` hook. Use this
+for default drag distances across the site.
+
+```yaml
+plugins:
+  - source: github:darkmindsxyz/quartz-peek-quotes
+    enabled: true
+    options:
+      maxPeekAbove: 280
+      maxPeekBelow: 340
+      snapThreshold: 72
+```
+
+Per-component options passed in TypeScript still override those defaults:
+
+```ts
+Plugin.PeekQuotes({
+  maxPeekAbove: 360,
+});
+```
+
+## 5. Custom Handle Label
+
+Use `handleLabel` when the default accessible label does not fit the context.
+
+```ts
+Plugin.PeekQuotes({
+  handleLabel: "Drag to reveal surrounding interview context",
+});
+```
+
+## 6. Styling Hook
+
+Pass a custom root class if the component needs page-specific sizing or placement.
+
+```ts
+Plugin.PeekQuotes({
+  className: "peek-quotes interview-peek",
+});
+```
+
+```scss
+.interview-peek {
+  --peek-shell-height: 620px;
+  --peek-card-width: min(520px, calc(100% - 46px));
 }
 ```
+
+## 7. Behavior Summary
+
+The component measures the rendered `<mark>` anchor in the browser, then updates CSS variables for
+the viewport mask:
+
+```txt
+viewportTop = anchor.y - peekAbove
+viewportHeight = anchor.height + peekAbove + peekBelow
+documentY = -viewportTop
+```
+
+Dragging up reveals earlier content. Dragging down reveals later content. The document itself is not
+scrolled; the visible crop expands around the highlighted anchor.
