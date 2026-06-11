@@ -40,11 +40,16 @@ peekQuote:
 
     Only later did the surrounding details make the statement feel complete.
   highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
-  highlightColor: "#ffd84d"
+  maxPeekAbove: 280
+  maxPeekBelow: 340
+  snapThreshold: 72
+  highlightColor: "#faf61148"
 ```
 ````
 
-The fenced block renders inline where it appears in the document.
+The fenced block renders inline where it appears in the document. Layout and interaction options in
+the `peekQuote:` block apply only to that one peek quote, so each excerpt can tune its own reveal
+distance and snap behavior.
 
 For TypeScript layout overrides, the component is still available for explicit programmatic use:
 

@@ -26,10 +26,16 @@ peekQuote:
 
     Only later did the surrounding details make the statement feel complete.
   highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
+  maxPeekAbove: 280
+  maxPeekBelow: 340
+  snapThreshold: 72
+  highlightColor: "#ffd84d2f"
 ```
 ````
 
-The transformer replaces that code fence with the draggable quote card inline.
+The transformer replaces that code fence with the draggable quote card inline. Values inside
+`peekQuote:` apply only to that one peek, so each quote can tune its own reveal distance, snap
+threshold, and highlight color.
 
 ## 3. Programmatic Component
 
@@ -58,6 +64,10 @@ The selected sentence stayed in the transcript because it changed how the rest o
 Only later did the surrounding details make the statement feel complete.`,
       highlight:
         "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read.",
+      maxPeekAbove: 280,
+      maxPeekBelow: 340,
+      snapThreshold: 72,
+      highlightColor: "#ffd84d2f",
     }),
   ],
 };
@@ -65,7 +75,7 @@ Only later did the surrounding details make the statement feel complete.`,
 
 ## 4. Site Defaults from YAML
 
-Use plugin options for default drag distances across the site.
+Use plugin options for fallback drag distances across the site.
 
 ```yaml
 plugins:
@@ -77,13 +87,16 @@ plugins:
       snapThreshold: 72
 ```
 
-Per-component options passed in TypeScript still override those defaults:
+Per-peek options in Markdown and per-component options in TypeScript override those defaults:
 
-```ts
-Plugin.PeekQuotes({
-  maxPeekAbove: 360,
-});
+````md
+```peek
+peekQuote:
+  text: "Earlier context. The selected sentence. Later context."
+  highlight: "The selected sentence"
+  maxPeekAbove: 360
 ```
+````
 
 ## 5. Custom Handle Label
 
@@ -107,8 +120,8 @@ Plugin.PeekQuotes({
 
 ```scss
 .interview-peek {
-  --peek-shell-height: 620px;
-  --peek-card-width: min(520px, calc(100% - 46px));
+  --peek-highlight-color: #ffd84d2f;
+  --peek-muted: var(--secondary);
 }
 ```
 
@@ -118,9 +131,9 @@ The component measures the rendered `<mark>` anchor in the browser, then updates
 the viewport mask:
 
 ```txt
-viewportTop = anchor.y - peekAbove
+viewportTop = -peekAbove
 viewportHeight = anchor.height + peekAbove + peekBelow
-documentY = -viewportTop
+documentY = -(anchor.y - peekAbove)
 ```
 
 Dragging up reveals earlier content. Dragging down reveals later content. The document itself is not

@@ -31,6 +31,34 @@ export interface PeekQuotesOptions {
   highlightColor?: string;
 }
 
+type PeekQuotesRuntimeOptionKeys =
+  | "className"
+  | "handleLabel"
+  | "maxPeekAbove"
+  | "maxPeekBelow"
+  | "snapThreshold"
+  | "highlightColor";
+
+export type PeekQuotesResolvedOptions = Required<
+  Pick<PeekQuotesOptions, PeekQuotesRuntimeOptionKeys>
+> &
+  PeekQuotesOptions;
+
+export const defaultPeekQuotesOptions = {
+  className: "peek-quotes",
+  handleLabel: "Drag to peek around highlighted quote",
+  maxPeekAbove: 320,
+  maxPeekBelow: 360,
+  snapThreshold: 80,
+  highlightColor: "#fff200",
+} satisfies Required<Pick<PeekQuotesOptions, PeekQuotesRuntimeOptionKeys>>;
+
+export function resolvePeekQuotesOptions(
+  ...optionSets: Array<PeekQuotesOptions | undefined>
+): PeekQuotesResolvedOptions {
+  return Object.assign({}, defaultPeekQuotesOptions, ...optionSets) as PeekQuotesResolvedOptions;
+}
+
 let configuredOptions: PeekQuotesOptions = {};
 
 export function initPeekQuotes(options?: Record<string, unknown>): void {
@@ -92,27 +120,7 @@ function renderTextFragments(value: string) {
 }
 
 export default ((opts?: PeekQuotesOptions) => {
-  const options = {
-    className: "peek-quotes",
-    handleLabel: "Drag to peek around highlighted quote",
-    maxPeekAbove: 320,
-    maxPeekBelow: 360,
-    snapThreshold: 80,
-    highlightColor: "#fff200",
-    ...configuredOptions,
-    ...opts,
-  } satisfies Required<
-    Pick<
-      PeekQuotesOptions,
-      | "className"
-      | "handleLabel"
-      | "maxPeekAbove"
-      | "maxPeekBelow"
-      | "snapThreshold"
-      | "highlightColor"
-    >
-  > &
-    PeekQuotesOptions;
+  const options = resolvePeekQuotesOptions(configuredOptions, opts);
 
   const Component: QuartzComponent = (props: QuartzComponentProps) => {
     const { text, highlight } = getConfiguredText(props, options);

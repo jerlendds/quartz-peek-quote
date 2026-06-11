@@ -37,6 +37,17 @@ function u2(e2, t2, n2, o2, i2, u3) {
 }
 
 // src/components/PeekQuotes.tsx
+var defaultPeekQuotesOptions = {
+  className: "peek-quotes",
+  handleLabel: "Drag to peek around highlighted quote",
+  maxPeekAbove: 320,
+  maxPeekBelow: 360,
+  snapThreshold: 80,
+  highlightColor: "#fff200"
+};
+function resolvePeekQuotesOptions(...optionSets) {
+  return Object.assign({}, defaultPeekQuotesOptions, ...optionSets);
+}
 var configuredOptions = {};
 function initPeekQuotes(options) {
   configuredOptions = options ?? {};
@@ -79,16 +90,7 @@ function renderTextFragments(value) {
   });
 }
 var PeekQuotes_default = ((opts) => {
-  const options = {
-    className: "peek-quotes",
-    handleLabel: "Drag to peek around highlighted quote",
-    maxPeekAbove: 320,
-    maxPeekBelow: 360,
-    snapThreshold: 80,
-    highlightColor: "#fff200",
-    ...configuredOptions,
-    ...opts
-  };
+  const options = resolvePeekQuotesOptions(configuredOptions, opts);
   const Component = (props) => {
     const { text, highlight } = getConfiguredText(props, options);
     return /* @__PURE__ */ u2(

@@ -37,6 +37,17 @@ function u2(e2, t2, n2, o2, i2, u3) {
 }
 
 // src/components/PeekQuotes.tsx
+var defaultPeekQuotesOptions = {
+  className: "peek-quotes",
+  handleLabel: "Drag to peek around highlighted quote",
+  maxPeekAbove: 320,
+  maxPeekBelow: 360,
+  snapThreshold: 80,
+  highlightColor: "#fff200"
+};
+function resolvePeekQuotesOptions(...optionSets) {
+  return Object.assign({}, defaultPeekQuotesOptions, ...optionSets);
+}
 var configuredOptions = {};
 function initPeekQuotes(options) {
   configuredOptions = options ?? {};
@@ -79,16 +90,7 @@ function renderTextFragments(value) {
   });
 }
 var PeekQuotes_default = ((opts) => {
-  const options = {
-    className: "peek-quotes",
-    handleLabel: "Drag to peek around highlighted quote",
-    maxPeekAbove: 320,
-    maxPeekBelow: 360,
-    snapThreshold: 80,
-    highlightColor: "#fff200",
-    ...configuredOptions,
-    ...opts
-  };
+  const options = resolvePeekQuotesOptions(configuredOptions, opts);
   const Component = (props) => {
     const { text, highlight } = getConfiguredText(props, options);
     return /* @__PURE__ */ u2(
@@ -323,12 +325,7 @@ function visit(tree, testOrVisitor, visitorOrReverse, maybeReverse) {
 // src/transformer.ts
 var defaultOptions = {
   language: "peek",
-  className: "peek-quotes",
-  handleLabel: "Drag to peek around highlighted quote",
-  maxPeekAbove: 320,
-  maxPeekBelow: 360,
-  snapThreshold: 80,
-  highlightColor: "#fff200"
+  ...defaultPeekQuotesOptions
 };
 var dedent = (value) => {
   const lines = value.replace(/\s+$/g, "").split("\n");
@@ -383,6 +380,8 @@ function parsePeekQuote(value) {
   return {
     text,
     highlight,
+    className: fields.className?.trim(),
+    handleLabel: fields.handleLabel?.trim(),
     maxPeekAbove: readNumber(fields.maxPeekAbove),
     maxPeekBelow: readNumber(fields.maxPeekBelow),
     snapThreshold: readNumber(fields.snapThreshold),
@@ -426,21 +425,18 @@ function renderHighlightedText2(text, highlight) {
     ...renderTextFragments2(text.slice(index + highlight.length))
   ];
 }
-function createPeekQuoteElement(data, options) {
-  const maxPeekAbove = data.maxPeekAbove ?? options.maxPeekAbove;
-  const maxPeekBelow = data.maxPeekBelow ?? options.maxPeekBelow;
-  const snapThreshold = data.snapThreshold ?? options.snapThreshold;
-  const highlightColor = data.highlightColor ?? options.highlightColor;
+function createPeekQuoteElement(data, fallbackOptions) {
+  const options = resolvePeekQuotesOptions(fallbackOptions, data);
   return {
     type: "element",
     tagName: "div",
     properties: {
       className: [options.className],
       "data-peek-quotes": "true",
-      "data-max-peek-above": String(maxPeekAbove),
-      "data-max-peek-below": String(maxPeekBelow),
-      "data-snap-threshold": String(snapThreshold),
-      style: `--peek-highlight-color: ${highlightColor}`
+      "data-max-peek-above": String(options.maxPeekAbove),
+      "data-max-peek-below": String(options.maxPeekBelow),
+      "data-snap-threshold": String(options.snapThreshold),
+      style: `--peek-highlight-color: ${options.highlightColor}`
     },
     children: [
       {
@@ -520,7 +516,10 @@ var remarkPeekQuotes = (options) => {
   };
 };
 var PeekQuotesTransformer = (userOptions) => {
-  const options = { ...defaultOptions, ...userOptions };
+  const options = {
+    language: userOptions?.language ?? defaultOptions.language,
+    ...resolvePeekQuotesOptions(userOptions)
+  };
   return {
     name: "PeekQuotesTransformer",
     markdownPlugins() {

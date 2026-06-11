@@ -1,21 +1,11 @@
 export { BuildCtx, CSSResource, ChangeEvent, JSResource, PageGenerator, PageMatcher, ProcessedContent, QuartzEmitterPlugin, QuartzEmitterPluginInstance, QuartzFilterPlugin, QuartzFilterPluginInstance, QuartzPageTypePlugin, QuartzPageTypePluginInstance, QuartzPluginData, QuartzTransformerPlugin, QuartzTransformerPluginInstance, StaticResources, VirtualPage } from '@quartz-community/types';
+import { PeekQuotesOptions } from './components/index.js';
 
-interface PeekQuotesTransformerOptions {
+type PeekQuotesRuntimeOptionKeys = "className" | "handleLabel" | "maxPeekAbove" | "maxPeekBelow" | "snapThreshold" | "highlightColor";
+type PeekQuotesTransformerOptions = Required<Pick<PeekQuotesOptions, PeekQuotesRuntimeOptionKeys>> & {
     /** Fenced code block language to transform. */
     language: string;
-    /** CSS class name to apply to the root element. */
-    className: string;
-    /** Accessible label for the drag handle. */
-    handleLabel: string;
-    /** Maximum pixels revealed above the highlight. */
-    maxPeekAbove: number;
-    /** Maximum pixels revealed below the highlight. */
-    maxPeekBelow: number;
-    /** Drag distance before release snaps open. */
-    snapThreshold: number;
-    /** CSS color used for the highlighted anchor text. */
-    highlightColor: string;
-}
+};
 interface ExampleFilterOptions {
     /** Allow pages marked draft: true to publish. */
     allowDrafts: boolean;
@@ -36,23 +26,5 @@ interface ExampleEmitterOptions {
     /** Add a custom class to the emitted manifest <script> tag if used in HTML. */
     manifestScriptClass?: string;
 }
-interface PeekQuotesOptions {
-    /** Full source text to render in the clipped viewport. */
-    text?: string;
-    /** Exact text fragment to mark as the semantic anchor. */
-    highlight?: string;
-    /** CSS class name to apply to the root element. */
-    className?: string;
-    /** Accessible label for the drag handle. */
-    handleLabel?: string;
-    /** Maximum pixels revealed above the highlight. */
-    maxPeekAbove?: number;
-    /** Maximum pixels revealed below the highlight. */
-    maxPeekBelow?: number;
-    /** Drag distance before release snaps open. */
-    snapThreshold?: number;
-    /** CSS color used for the highlighted anchor text. */
-    highlightColor?: string;
-}
 
-export type { ExampleEmitterOptions, ExampleFilterOptions, PeekQuotesOptions, PeekQuotesTransformerOptions };
+export { type ExampleEmitterOptions, type ExampleFilterOptions, PeekQuotesOptions, type PeekQuotesTransformerOptions };

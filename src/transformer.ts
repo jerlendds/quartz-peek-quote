@@ -4,28 +4,29 @@ import type { Element, ElementContent } from "hast";
 import { visit } from "unist-util-visit";
 import type { QuartzTransformerPlugin } from "@quartz-community/types";
 import type { PeekQuotesTransformerOptions } from "./types";
+import {
+  defaultPeekQuotesOptions,
+  resolvePeekQuotesOptions,
+  type PeekQuotesOptions,
+  type PeekQuotesResolvedOptions,
+} from "./components/PeekQuotes";
 import style from "./components/styles/peek-quotes.scss";
 // @ts-expect-error - inline script import handled by Quartz bundler
 import script from "./components/scripts/peek-quotes.inline.ts";
 
-type PeekQuoteData = {
+type PeekQuoteData = PeekQuotesOptions & {
   text: string;
   highlight: string;
-  maxPeekAbove?: number;
-  maxPeekBelow?: number;
-  snapThreshold?: number;
-  highlightColor?: string;
 };
 
-const defaultOptions: Required<PeekQuotesTransformerOptions> = {
-  language: "peek",
-  className: "peek-quotes",
-  handleLabel: "Drag to peek around highlighted quote",
-  maxPeekAbove: 320,
-  maxPeekBelow: 360,
-  snapThreshold: 80,
-  highlightColor: "#fff200",
+type ResolvedTransformerOptions = PeekQuotesResolvedOptions & {
+  language: string;
 };
+
+const defaultOptions = {
+  language: "peek",
+  ...defaultPeekQuotesOptions,
+} satisfies Required<PeekQuotesTransformerOptions>;
 
 const dedent = (value: string) => {
   const lines = value.replace(/\s+$/g, "").split("\n");
@@ -98,6 +99,8 @@ function parsePeekQuote(value: string): PeekQuoteData | null {
   return {
     text,
     highlight,
+    className: fields.className?.trim(),
+    handleLabel: fields.handleLabel?.trim(),
     maxPeekAbove: readNumber(fields.maxPeekAbove),
     maxPeekBelow: readNumber(fields.maxPeekBelow),
     snapThreshold: readNumber(fields.snapThreshold),
@@ -148,12 +151,9 @@ function renderHighlightedText(text: string, highlight: string): ElementContent[
 
 function createPeekQuoteElement(
   data: PeekQuoteData,
-  options: Required<PeekQuotesTransformerOptions>,
+  fallbackOptions: PeekQuotesResolvedOptions,
 ): Element {
-  const maxPeekAbove = data.maxPeekAbove ?? options.maxPeekAbove;
-  const maxPeekBelow = data.maxPeekBelow ?? options.maxPeekBelow;
-  const snapThreshold = data.snapThreshold ?? options.snapThreshold;
-  const highlightColor = data.highlightColor ?? options.highlightColor;
+  const options = resolvePeekQuotesOptions(fallbackOptions, data);
 
   return {
     type: "element",
@@ -161,10 +161,10 @@ function createPeekQuoteElement(
     properties: {
       className: [options.className],
       "data-peek-quotes": "true",
-      "data-max-peek-above": String(maxPeekAbove),
-      "data-max-peek-below": String(maxPeekBelow),
-      "data-snap-threshold": String(snapThreshold),
-      style: `--peek-highlight-color: ${highlightColor}`,
+      "data-max-peek-above": String(options.maxPeekAbove),
+      "data-max-peek-below": String(options.maxPeekBelow),
+      "data-snap-threshold": String(options.snapThreshold),
+      style: `--peek-highlight-color: ${options.highlightColor}`,
     },
     children: [
       {
@@ -227,9 +227,7 @@ function createPeekQuoteElement(
   };
 }
 
-const remarkPeekQuotes = (
-  options: Required<PeekQuotesTransformerOptions>,
-): Plugin<[], MdastRoot> => {
+const remarkPeekQuotes = (options: ResolvedTransformerOptions): Plugin<[], MdastRoot> => {
   return () => (tree: MdastRoot) => {
     visit(tree, "code", (node: Code) => {
       if (node.lang !== options.language) return;
@@ -256,7 +254,10 @@ const remarkPeekQuotes = (
 export const PeekQuotesTransformer: QuartzTransformerPlugin<
   Partial<PeekQuotesTransformerOptions>
 > = (userOptions?: Partial<PeekQuotesTransformerOptions>) => {
-  const options = { ...defaultOptions, ...userOptions };
+  const options = {
+    language: userOptions?.language ?? defaultOptions.language,
+    ...resolvePeekQuotesOptions(userOptions),
+  };
 
   return {
     name: "PeekQuotesTransformer",

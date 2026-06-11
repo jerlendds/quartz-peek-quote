@@ -26,6 +26,9 @@ peekQuote:
 
     Only later did the surrounding details make the statement feel complete.
   highlight: "The selected sentence stayed in the transcript."
+  maxPeekAbove: 280
+  maxPeekBelow: 340
+  snapThreshold: 72
   highlightColor: "#ffd84d"
 \`\`\`
 
@@ -50,6 +53,9 @@ After`),
       "The selected sentence stayed in the transcript.",
     );
     expect(JSON.stringify(peekNode.data.hChildren)).toContain("data-peek-highlight");
+    expect(JSON.stringify(peekNode.data.hChildren)).toContain('"data-max-peek-above":"280"');
+    expect(JSON.stringify(peekNode.data.hChildren)).toContain('"data-max-peek-below":"340"');
+    expect(JSON.stringify(peekNode.data.hChildren)).toContain('"data-snap-threshold":"72"');
     expect(JSON.stringify(peekNode.data.hChildren)).toContain("--peek-highlight-color: #ffd84d");
   });
 

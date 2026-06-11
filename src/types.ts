@@ -18,23 +18,22 @@ export type {
   QuartzPageTypePlugin,
   QuartzPageTypePluginInstance,
 } from "@quartz-community/types";
+import type { PeekQuotesOptions } from "./components/PeekQuotes";
 
-export interface PeekQuotesTransformerOptions {
+type PeekQuotesRuntimeOptionKeys =
+  | "className"
+  | "handleLabel"
+  | "maxPeekAbove"
+  | "maxPeekBelow"
+  | "snapThreshold"
+  | "highlightColor";
+
+export type PeekQuotesTransformerOptions = Required<
+  Pick<PeekQuotesOptions, PeekQuotesRuntimeOptionKeys>
+> & {
   /** Fenced code block language to transform. */
   language: string;
-  /** CSS class name to apply to the root element. */
-  className: string;
-  /** Accessible label for the drag handle. */
-  handleLabel: string;
-  /** Maximum pixels revealed above the highlight. */
-  maxPeekAbove: number;
-  /** Maximum pixels revealed below the highlight. */
-  maxPeekBelow: number;
-  /** Drag distance before release snaps open. */
-  snapThreshold: number;
-  /** CSS color used for the highlighted anchor text. */
-  highlightColor: string;
-}
+};
 
 export interface ExampleFilterOptions {
   /** Allow pages marked draft: true to publish. */
@@ -58,21 +57,4 @@ export interface ExampleEmitterOptions {
   manifestScriptClass?: string;
 }
 
-export interface PeekQuotesOptions {
-  /** Full source text to render in the clipped viewport. */
-  text?: string;
-  /** Exact text fragment to mark as the semantic anchor. */
-  highlight?: string;
-  /** CSS class name to apply to the root element. */
-  className?: string;
-  /** Accessible label for the drag handle. */
-  handleLabel?: string;
-  /** Maximum pixels revealed above the highlight. */
-  maxPeekAbove?: number;
-  /** Maximum pixels revealed below the highlight. */
-  maxPeekBelow?: number;
-  /** Drag distance before release snaps open. */
-  snapThreshold?: number;
-  /** CSS color used for the highlighted anchor text. */
-  highlightColor?: string;
-}
+export type { PeekQuotesOptions } from "./components/PeekQuotes";
