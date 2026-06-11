@@ -110,7 +110,8 @@
     "defaultOptions": {
       "maxPeekAbove": 320,
       "maxPeekBelow": 360,
-      "snapThreshold": 80
+      "snapThreshold": 80,
+      "highlightColor": "#fff200"
     },
     "optionSchema": {
       "language": {
@@ -124,6 +125,9 @@
       },
       "snapThreshold": {
         "type": "number"
+      },
+      "highlightColor": {
+        "type": "string"
       }
     },
     "components": {

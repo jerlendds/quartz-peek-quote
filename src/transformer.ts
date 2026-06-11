@@ -14,6 +14,7 @@ type PeekQuoteData = {
   maxPeekAbove?: number;
   maxPeekBelow?: number;
   snapThreshold?: number;
+  highlightColor?: string;
 };
 
 const defaultOptions: Required<PeekQuotesTransformerOptions> = {
@@ -23,6 +24,7 @@ const defaultOptions: Required<PeekQuotesTransformerOptions> = {
   maxPeekAbove: 320,
   maxPeekBelow: 360,
   snapThreshold: 80,
+  highlightColor: "#fff200",
 };
 
 const dedent = (value: string) => {
@@ -99,6 +101,7 @@ function parsePeekQuote(value: string): PeekQuoteData | null {
     maxPeekAbove: readNumber(fields.maxPeekAbove),
     maxPeekBelow: readNumber(fields.maxPeekBelow),
     snapThreshold: readNumber(fields.snapThreshold),
+    highlightColor: fields.highlightColor?.trim(),
   };
 }
 
@@ -150,6 +153,7 @@ function createPeekQuoteElement(
   const maxPeekAbove = data.maxPeekAbove ?? options.maxPeekAbove;
   const maxPeekBelow = data.maxPeekBelow ?? options.maxPeekBelow;
   const snapThreshold = data.snapThreshold ?? options.snapThreshold;
+  const highlightColor = data.highlightColor ?? options.highlightColor;
 
   return {
     type: "element",
@@ -160,6 +164,7 @@ function createPeekQuoteElement(
       "data-max-peek-above": String(maxPeekAbove),
       "data-max-peek-below": String(maxPeekBelow),
       "data-snap-threshold": String(snapThreshold),
+      style: `--peek-highlight-color: ${highlightColor}`,
     },
     children: [
       {

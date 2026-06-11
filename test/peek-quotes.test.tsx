@@ -9,12 +9,14 @@ describe("PeekQuotes", () => {
     const Component = PeekQuotes({
       text: "Before context. Anchor phrase. After context.",
       highlight: "Anchor phrase",
+      highlightColor: "#ffd84d",
     });
 
     const html = render(Component(createComponentProps()) as VNode);
 
     expect(html).toContain('data-peek-quotes="true"');
     expect(html).toContain('data-peek-highlight="true"');
+    expect(html).toContain("--peek-highlight-color:#ffd84d");
     expect(html).toContain("Anchor phrase");
   });
 

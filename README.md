@@ -1,6 +1,6 @@
 # Quartz Peek Quotes
 
-`quartz-peek-quotes` is a Quartz v5 transformer/component plugin for draggable quote cards. It
+`quartz-peek-quote` is a Quartz v5 transformer/component plugin for draggable quote cards. It
 renders a full text excerpt as one laid-out document, marks a configured passage as the anchor, and
 lets readers drag the side handle up or down to reveal surrounding context through a clipped
 viewport.
@@ -24,7 +24,7 @@ Enable the plugin in `quartz.config.yaml`:
 
 ```yaml
 plugins:
-  - source: github:darkmindsxyz/quartz-peek-quotes
+  - source: github:darkmindsxyz/quartz-peek-quote
     enabled: true
 ```
 
@@ -40,6 +40,7 @@ peekQuote:
 
     Only later did the surrounding details make the statement feel complete.
   highlight: "The selected sentence stayed in the transcript because it changed how the rest of the interview should be read."
+  highlightColor: "#ffd84d"
 ```
 ````
 
@@ -62,14 +63,15 @@ export const layout = {
 
 ## Options
 
-| Option          | Type     | Default           | Description                               |
-| --------------- | -------- | ----------------- | ----------------------------------------- |
-| `language`      | `string` | `peek`            | Fenced code language transformed inline.  |
-| `className`     | `string` | `peek-quotes`     | Root CSS class.                           |
-| `handleLabel`   | `string` | descriptive label | Accessible label for the drag handle.     |
-| `maxPeekAbove`  | `number` | `320`             | Maximum pixels revealed above the anchor. |
-| `maxPeekBelow`  | `number` | `360`             | Maximum pixels revealed below the anchor. |
-| `snapThreshold` | `number` | `80`              | Drag distance before release snaps open.  |
+| Option           | Type     | Default           | Description                               |
+| ---------------- | -------- | ----------------- | ----------------------------------------- |
+| `language`       | `string` | `peek`            | Fenced code language transformed inline.  |
+| `className`      | `string` | `peek-quotes`     | Root CSS class.                           |
+| `handleLabel`    | `string` | descriptive label | Accessible label for the drag handle.     |
+| `maxPeekAbove`   | `number` | `320`             | Maximum pixels revealed above the anchor. |
+| `maxPeekBelow`   | `number` | `360`             | Maximum pixels revealed below the anchor. |
+| `snapThreshold`  | `number` | `80`              | Drag distance before release snaps open.  |
+| `highlightColor` | `string` | `#fff200`         | CSS color for the highlighted anchor.     |
 
 The programmatic component also accepts `text` and `highlight`. Frontmatter is not supported.
 

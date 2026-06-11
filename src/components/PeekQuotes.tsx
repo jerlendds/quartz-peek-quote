@@ -27,6 +27,8 @@ export interface PeekQuotesOptions {
   maxPeekBelow?: number;
   /** Pixels dragged before release snaps open instead of closed. */
   snapThreshold?: number;
+  /** CSS color used for the highlighted anchor text. */
+  highlightColor?: string;
 }
 
 let configuredOptions: PeekQuotesOptions = {};
@@ -96,12 +98,18 @@ export default ((opts?: PeekQuotesOptions) => {
     maxPeekAbove: 320,
     maxPeekBelow: 360,
     snapThreshold: 80,
+    highlightColor: "#fff200",
     ...configuredOptions,
     ...opts,
   } satisfies Required<
     Pick<
       PeekQuotesOptions,
-      "className" | "handleLabel" | "maxPeekAbove" | "maxPeekBelow" | "snapThreshold"
+      | "className"
+      | "handleLabel"
+      | "maxPeekAbove"
+      | "maxPeekBelow"
+      | "snapThreshold"
+      | "highlightColor"
     >
   > &
     PeekQuotesOptions;
@@ -116,6 +124,7 @@ export default ((opts?: PeekQuotesOptions) => {
         data-max-peek-above={options.maxPeekAbove}
         data-max-peek-below={options.maxPeekBelow}
         data-snap-threshold={options.snapThreshold}
+        style={{ "--peek-highlight-color": options.highlightColor }}
       >
         <div class="peek-quotes__shell">
           <div class="peek-quotes__rail" aria-hidden="true">

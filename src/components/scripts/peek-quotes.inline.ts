@@ -40,16 +40,18 @@ function rectUnion(rects: DOMRect[], relativeTo: DOMRect) {
 }
 
 function setViewport(root: HTMLElement, state: PeekState) {
-  const viewportTop = state.anchorY - state.peekAbove;
+  const viewportTop = -state.peekAbove;
   const viewportHeight = state.anchorHeight + state.peekAbove + state.peekBelow;
-  const handleY = state.anchorCenterY - state.peekAbove + state.peekBelow;
-  const lineTop = Math.min(state.anchorCenterY, handleY);
-  const lineHeight = Math.abs(handleY - state.anchorCenterY);
+  const anchorCenterY = state.anchorHeight / 2;
+  const handleY = anchorCenterY - state.peekAbove + state.peekBelow;
+  const lineTop = Math.min(anchorCenterY, handleY);
+  const lineHeight = Math.abs(handleY - anchorCenterY);
 
   root.style.setProperty("--peek-anchor-y", `${state.anchorY}px`);
+  root.style.setProperty("--peek-anchor-height", `${state.anchorHeight}px`);
   root.style.setProperty("--peek-viewport-top", `${viewportTop}px`);
   root.style.setProperty("--peek-viewport-height", `${viewportHeight}px`);
-  root.style.setProperty("--peek-document-y", `${-viewportTop}px`);
+  root.style.setProperty("--peek-document-y", `${-(state.anchorY - state.peekAbove)}px`);
   root.style.setProperty("--peek-handle-y", `${handleY}px`);
   root.style.setProperty("--peek-line-top", `${lineTop}px`);
   root.style.setProperty("--peek-line-height", `${lineHeight}px`);

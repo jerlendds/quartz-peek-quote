@@ -32,6 +32,8 @@ export interface PeekQuotesTransformerOptions {
   maxPeekBelow: number;
   /** Drag distance before release snaps open. */
   snapThreshold: number;
+  /** CSS color used for the highlighted anchor text. */
+  highlightColor: string;
 }
 
 export interface ExampleFilterOptions {
@@ -71,4 +73,6 @@ export interface PeekQuotesOptions {
   maxPeekBelow?: number;
   /** Drag distance before release snaps open. */
   snapThreshold?: number;
+  /** CSS color used for the highlighted anchor text. */
+  highlightColor?: string;
 }

@@ -26,6 +26,7 @@ peekQuote:
 
     Only later did the surrounding details make the statement feel complete.
   highlight: "The selected sentence stayed in the transcript."
+  highlightColor: "#ffd84d"
 \`\`\`
 
 After`),
@@ -49,6 +50,7 @@ After`),
       "The selected sentence stayed in the transcript.",
     );
     expect(JSON.stringify(peekNode.data.hChildren)).toContain("data-peek-highlight");
+    expect(JSON.stringify(peekNode.data.hChildren)).toContain("--peek-highlight-color: #ffd84d");
   });
 
   it("leaves invalid peek fences untouched", async () => {
