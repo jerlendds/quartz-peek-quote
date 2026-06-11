@@ -1,14 +1,5 @@
-export { ExampleTransformer } from "./transformer";
-export { ExampleFilter } from "./filter";
-export { ExampleEmitter } from "./emitter";
 export { default as PeekQuotes, initPeekQuotes } from "./components/PeekQuotes";
 import { initPeekQuotes } from "./components/PeekQuotes";
-
-export type {
-  ExampleTransformerOptions,
-  ExampleFilterOptions,
-  ExampleEmitterOptions,
-} from "./types";
 
 export type { PeekQuotesOptions } from "./components/PeekQuotes";
 

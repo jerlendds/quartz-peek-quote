@@ -16,7 +16,7 @@ The interaction is a masked reveal, not a scroll container:
 Install the plugin in a Quartz v5 site:
 
 ```bash
-npx quartz plugin add github:jerlendds/quartz-peek-quotes
+npx quartz plugin add github:jerlendds/quartz-peek-quote
 ```
 
 Add the component to a layout position in `quartz.config.yaml`:
