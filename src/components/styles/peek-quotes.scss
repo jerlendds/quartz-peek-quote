@@ -43,8 +43,6 @@
   height: var(--peek-anchor-height);
   min-height: 1.5em;
   overflow: visible;
-  border: 1px solid var(--secondary);
-  border-radius: 4px;
 }
 
 .peek-quotes__viewport {
@@ -57,7 +55,7 @@
   overflow: hidden;
   border: 1px dashed var(--secondary);
   border-radius: 4px;
-  background-color: var(--peek-surface);
+  background-color: var(--light);
   box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
   transform: translateY(var(--peek-viewport-top));
   transition:
