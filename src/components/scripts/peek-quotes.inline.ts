@@ -2,6 +2,7 @@ type PeekState = {
   anchorY: number;
   anchorHeight: number;
   anchorCenterY: number;
+  anchorInset: number;
   dragStartY: number;
   activePointerId: number | null;
   peekAbove: number;
@@ -41,17 +42,21 @@ function rectUnion(rects: DOMRect[], relativeTo: DOMRect) {
 
 function setViewport(root: HTMLElement, state: PeekState) {
   const viewportTop = -state.peekAbove;
-  const viewportHeight = state.anchorHeight + state.peekAbove + state.peekBelow;
-  const anchorCenterY = state.anchorHeight / 2;
+  const closedHeight = state.anchorHeight + state.anchorInset * 2;
+  const viewportHeight = closedHeight + state.peekAbove + state.peekBelow;
+  const anchorCenterY = state.anchorInset + state.anchorHeight / 2;
   const handleY = anchorCenterY - state.peekAbove + state.peekBelow;
   const lineTop = Math.min(anchorCenterY, handleY);
   const lineHeight = Math.abs(handleY - anchorCenterY);
 
   root.style.setProperty("--peek-anchor-y", `${state.anchorY}px`);
-  root.style.setProperty("--peek-anchor-height", `${state.anchorHeight}px`);
+  root.style.setProperty("--peek-anchor-height", `${closedHeight}px`);
   root.style.setProperty("--peek-viewport-top", `${viewportTop}px`);
   root.style.setProperty("--peek-viewport-height", `${viewportHeight}px`);
-  root.style.setProperty("--peek-document-y", `${-(state.anchorY - state.peekAbove)}px`);
+  root.style.setProperty(
+    "--peek-document-y",
+    `${-(state.anchorY - state.peekAbove - state.anchorInset)}px`,
+  );
   root.style.setProperty("--peek-handle-y", `${handleY}px`);
   root.style.setProperty("--peek-line-top", `${lineTop}px`);
   root.style.setProperty("--peek-line-height", `${lineHeight}px`);
@@ -69,6 +74,7 @@ function measure(root: HTMLElement, state: PeekState) {
   state.anchorY = unionRect.y;
   state.anchorHeight = unionRect.height;
   state.anchorCenterY = unionRect.y + unionRect.height / 2;
+  state.anchorInset = clamp(unionRect.height * 0.2, 3, 8);
   setViewport(root, state);
   return true;
 }
@@ -89,6 +95,7 @@ function setupPeekQuote(root: HTMLElement) {
     anchorY: 0,
     anchorHeight: 0,
     anchorCenterY: 0,
+    anchorInset: 4,
     dragStartY: 0,
     activePointerId: null,
     peekAbove: 0,
