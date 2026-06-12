@@ -12,7 +12,7 @@
   --peek-rail-x: 10px;
   --peek-highlight-color: #fff200;
   --peek-surface: var(--light, #0b0d10);
-  --peek-border: var(--lightgray, color-mix(in srgb, currentColor 35%, transparent));
+  --secondary: var(--lightgray, color-mix(in srgb, currentColor 35%, transparent));
   --peek-muted: var(--gray, color-mix(in srgb, currentColor 55%, transparent));
   --peek-handle-color: var(--secondary, #00b8a9);
   --peek-handle-ring: var(--peek-surface);
@@ -55,7 +55,7 @@
   width: var(--peek-card-width);
   height: var(--peek-viewport-height);
   overflow: hidden;
-  border: 1px solid var(--peek-border);
+  border: 1px dashed var(--secondary);
   border-radius: 4px;
   background-color: var(--peek-surface);
   box-shadow: 0 8px 24px rgb(0 0 0 / 8%);
@@ -127,7 +127,7 @@
   padding: 0;
   border-radius: 999px;
   box-shadow:
-    0 0 0 1px var(--peek-border),
+    0 0 0 1px var(--secondary),
     0 2px 8px rgb(0 0 0 / 24%);
   cursor: grab;
   touch-action: none;
