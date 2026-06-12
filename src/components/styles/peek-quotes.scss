@@ -48,7 +48,7 @@
 .peek-quotes__viewport {
   position: absolute;
   top: 0;
-  left: var(--peek-card-left);
+  left: 20px;
   z-index: 3;
   width: var(--peek-card-width);
   height: var(--peek-viewport-height);
@@ -134,7 +134,6 @@
   will-change: transform;
   background: var(--background-secondary);
   border: 2px solid var(--text-accent-hover);
-  border-style: dashed;
 }
 
 .peek-quotes__handle:active {
